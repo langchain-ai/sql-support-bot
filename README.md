@@ -26,17 +26,17 @@ export OPENAI_API_KEY="your-key-here"
 
 ### Python Script
 ```bash
-uv run python agent_deepagents.py
+uv run python agent.py
 ```
 
 Type your questions and the agent will respond. Type `quit` to exit.
 
 ### Jupyter Notebook
 ```bash
-uv run jupyter notebook agent_deepagents.ipynb
+uv run jupyter notebook
 ```
 
-Run cells sequentially to interact with the agent.
+Then open `agent.ipynb` and run cells sequentially to interact with the agent.
 
 ## Example Queries
 
