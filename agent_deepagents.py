@@ -1,13 +1,11 @@
 """
 Customer Support Bot using DeepAgents
 
-This is a migrated version from LangGraph to DeepAgents.
-The bot helps customers with:
-1. Music inquiries - finding songs, albums, and artists
-2. Account management - looking up customer information
+A customer support chatbot for a music store that can:
+1. Help customers find songs, albums, and artists in the catalog
+2. Look up customer account information
 
-DeepAgents handles routing automatically, so we don't need manual conditional edges.
-We can optionally use subagents to keep contexts separate for specialized tasks.
+Built with DeepAgents - the agent autonomously decides which tools to use.
 """
 
 from dotenv import load_dotenv
@@ -18,7 +16,7 @@ from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
 from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
-from deepagents import create_deep_agent, CompiledSubAgent
+from deepagents import create_deep_agent
 
 # Load environment variables
 load_dotenv()
@@ -93,11 +91,10 @@ def get_customer_info(customer_id: int):
     return db.run(f"SELECT * FROM Customer WHERE CustomerID = {customer_id};")
 
 
-# Option 1: Simple approach - single agent with all tools
-def create_simple_agent():
+def create_agent():
     """
-    Create a single DeepAgent with all tools.
-    DeepAgents will autonomously decide which tools to use based on the user's query.
+    Create a DeepAgent with all tools.
+    The agent autonomously decides which tools to use based on the user's query.
     """
     system_prompt = """You are a helpful customer service representative for a music store.
 
@@ -129,86 +126,12 @@ Be polite, helpful, and guide customers to provide any information you need (lik
     return agent
 
 
-# Option 2: Advanced approach - using subagents for specialized contexts
-def create_agent_with_subagents():
-    """
-    Create a DeepAgent with specialized subagents for music and customer support.
-    This keeps contexts separate and prevents the main agent's context from getting cluttered.
-    """
-
-    # Create music specialist subagent
-    music_subagent_graph = create_deep_agent(
-        model=ChatOpenAI(model="gpt-4o", temperature=0),
-        tools=[get_albums_by_artist, get_tracks_by_artist, check_for_songs],
-        system_prompt="""You are a music specialist for a music store.
-
-Your job is to help customers find songs, albums, and artists in our catalog.
-You have tools to search by artist name or song title.
-
-When searching, the tools may return similar matches if exact matches aren't found - this is intentional.
-
-Be helpful and provide relevant information from our music catalog."""
-    )
-
-    music_subagent = CompiledSubAgent(
-        name="music-specialist",
-        description="Specialist for helping customers find music, songs, albums, and artists in the catalog. Use this when customers want to search for or learn about music.",
-        runnable=music_subagent_graph
-    )
-
-    # Create customer service subagent
-    customer_subagent_graph = create_deep_agent(
-        model=ChatOpenAI(model="gpt-4o", temperature=0),
-        tools=[get_customer_info],
-        system_prompt="""You are a customer account specialist for a music store.
-
-Your job is to help customers access and understand their account information.
-
-You have access to customer account data, but you MUST have the customer ID first.
-Always ask for the customer ID before attempting to look up information.
-
-Be professional and protect customer privacy."""
-    )
-
-    customer_subagent = CompiledSubAgent(
-        name="customer-account-specialist",
-        description="Specialist for helping customers with their account information and profile. Use this when customers want to access or update their account details.",
-        runnable=customer_subagent_graph
-    )
-
-    # Create main agent that can delegate to subagents
-    agent = create_deep_agent(
-        model=ChatOpenAI(model="gpt-4o", temperature=0),
-        tools=[],  # Main agent doesn't need direct tool access
-        subagents=[music_subagent, customer_subagent],
-        system_prompt="""You are a friendly customer service representative for a music store.
-
-You have access to specialized assistants who can help with specific tasks:
-- Music specialist: For finding songs, albums, and artists
-- Customer account specialist: For account-related inquiries
-
-Greet customers warmly, understand what they need, and delegate to the appropriate specialist when needed.
-If a customer's request is simple and conversational, you can respond directly."""
-    )
-
-    return agent
-
-
 # Main entry point
 if __name__ == "__main__":
     print("=== SQL Support Bot with DeepAgents ===\n")
-    print("Choose an agent architecture:")
-    print("1. Simple agent (all tools in one agent)")
-    print("2. Agent with subagents (specialized contexts)")
+    print("Initializing agent...\n")
 
-    choice = input("\nEnter your choice (1 or 2): ").strip()
-
-    if choice == "2":
-        print("\nCreating agent with specialized subagents...\n")
-        agent = create_agent_with_subagents()
-    else:
-        print("\nCreating simple agent with all tools...\n")
-        agent = create_simple_agent()
+    agent = create_agent()
 
     print("Agent ready! Type 'quit' to exit.\n")
 
