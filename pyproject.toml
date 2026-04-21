@@ -9,6 +9,6 @@ dependencies = [
     "ipykernel>=7.1.0",
     "notebook>=7.0.0",
     "langchain-community>=0.4.1",
-    "langchain-openai>=1.1.0",
+    "langchain-openai>=1.1.14",
     "deepagents>=0.1.0",
 ]
