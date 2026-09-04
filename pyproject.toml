@@ -5,10 +5,13 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "dotenv>=0.9.9",
-    "ipykernel>=7.1.0",
-    "notebook>=7.5.6",
-    "langchain-community>=0.4.1",
-    "langchain-openai>=1.2.1",
-    "deepagents>=0.1.0",
+    "deepagents>=0.7.13",
+    "ipykernel>=7.3.0",
+    "langchain-community>=0.4.2",
+    "langchain-core>=1.6.1",
+    "langchain-openai>=1.6.0",
+    "notebook>=7.6.2",
+    "python-dotenv>=1.2.3",
+    "requests>=2.34.2",
+    "sqlalchemy>=2.0.52",
 ]
